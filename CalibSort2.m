@@ -1,26 +1,26 @@
-function [orderedPts,indexs] = CalibSort2(unorder_pts,mode)
+function [orderedPts,indexs] = CalibSort2(unorder_pts,pattern)
 % 功能：相机标定点顺序提取，对无序点集按照“从上到下，从左到右”的原则排序。
 % 思路：首先根据四边形点集先找到4个角点，主要是利用凸包多边形思想，包括四个角点方向顺序确定，随后通过预先规定的对应四点
 % 坐标计算透视变换矩阵，其次通过透视变换把所有点映射到到正方形上面来，
 % 最后对正方形上面的点集进行“从小到大”的原则排序，排序好的索引应用到原无序点集即可完成
 %
 % 输入：unorder_pts，n*2 double，[x,y]无序点集坐标
-%      mode，1*2 double，模式，[rows,cols] 标定板点行列个数
+%      pattern，1*2 double，模式，[rows,cols] 标定板点行列个数
 % 输出：orderedPts，n*2 double，[x,y]有序点集坐标
 %       indexs， n*1 double， 索引值(可选)
-% 注意：unorder_pts 必须是满足投影变换的点集,点集个数与mode指定大小要一致
+% 注意：unorder_pts 必须是满足投影变换的点集,点集个数与pattern指定大小要一致
 %
 % EXAMPLE:
-%        mode = [10,6];% rows*cols 个标定点模式
-%        [X,Y] = meshgrid(1:mode(2),1:mode(1));
+%        pattern = [10,6];% rows*cols 个标定点模式
+%        [X,Y] = meshgrid(1:pattern(2),1:pattern(1));
 %        unorderedPts = [X(:),Y(:)];
-%        [orderedPts,indexs] =  CalibSort2(unorderedPts,mode);
+%        [orderedPts,indexs] =  CalibSort2(unorderedPts,pattern);
 % 
 %        % 绘制排序好后的点
 %        figure;
 %        hold on;
 %        plot(orderedPts(:,1),orderedPts(:,2),'b.',MarkerSize=20)
-%        text(orderedPts(:,1),orderedPts(:,2),string(1:prod(mode)))
+%        text(orderedPts(:,1),orderedPts(:,2),string(1:prod(pattern)))
 %        grid
 %        title('ordered points')
 %
@@ -32,7 +32,7 @@ function [orderedPts,indexs] = CalibSort2(unorder_pts,mode)
 
 arguments
     unorder_pts (:,2) double
-    mode (:,:) double
+    pattern (:,:) double
 end
 
 %% Step1,找出无序平面点集的4个顶点
@@ -133,9 +133,9 @@ tform = fitgeotrans(newconners,squre_pts,'Projective');
 numPts = size(unorder_pts,1);% 初始化
 orderedPts = zeros(numPts,2); % 初始化
 indexs = ones(numPts,1);
-for irow = 1:mode(1)
-    idxStart = (irow-1)*mode(2)+1;
-    idxEnd =  idxStart+mode(2)-1;
+for irow = 1:pattern(1)
+    idxStart = (irow-1)*pattern(2)+1;
+    idxEnd =  idxStart+pattern(2)-1;
 
     currRowIndexs = y_increasing_index(idxStart:idxEnd);
     currRowPts = unorder_pts(currRowIndexs,:);
